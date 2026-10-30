@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102a43">
+<title>Amit Business Manager</title>
+<style>
+:root{--navy:#102a43;--blue:#2463eb;--bg:#f3f6fb;--ink:#172b4d;--muted:#65758b;--line:#e2e8f0;--white:#fff;--green:#14804a;--red:#c0392b}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,#102a43,#1e4e79);color:white;padding:22px 16px 18px}
+header .top{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:980px;margin:auto}
+h1{font-size:21px;margin:0}header p{margin:5px 0 0;color:#dbeafe;font-size:13px}
+.pill{border:1px solid #6b8caf;border-radius:999px;padding:6px 10px;font-size:11px}
+main{max-width:980px;margin:0 auto;padding:16px 14px 86px}
+.notice{font-size:12px;color:#5b6472;background:#fff8e6;border:1px solid #f4d58d;border-radius:12px;padding:10px 12px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:white;border:1px solid var(--line);border-radius:15px;padding:14px;box-shadow:0 2px 8px #102a4308}
+.stat .label{font-size:12px;color:var(--muted)}.stat .value{font-size:21px;font-weight:750;margin-top:6px;overflow-wrap:anywhere}
+.section{background:white;border:1px solid var(--line);border-radius:15px;padding:15px;margin-top:14px}
+.section h2{font-size:16px;margin:0 0 12px}
+.quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+button,.button{border:0;border-radius:10px;padding:11px 12px;font-weight:650;font-size:13px;cursor:pointer}
+.primary{background:var(--blue);color:white}.secondary{background:#eaf0f8;color:#183b56}.danger{background:#fff0ef;color:var(--red)}.small{padding:7px 9px;font-size:12px}
+.tabs{display:flex;gap:6px;overflow:auto;margin:15px 0 0;padding-bottom:2px}
+.tab{white-space:nowrap;background:#e5edf7;color:#25445e}.tab.active{background:var(--navy);color:white}
+.panel{display:none}.panel.active{display:block}
+form{display:grid;grid-template-columns:1fr;gap:10px}
+label{font-size:12px;font-weight:650;color:#41556b;display:block;margin-bottom:5px}
+input,select{width:100%;padding:11px;border:1px solid #ccd6e2;border-radius:9px;background:#fff;font:inherit;font-size:14px;color:var(--ink)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}.item strong{font-size:14px}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.amount{font-weight:750;white-space:nowrap}.income{color:var(--green)}.expense{color:var(--red)}
+.empty{font-size:13px;color:var(--muted);padding:12px 0}
+footer{text-align:center;color:#8090a4;font-size:11px;padding:18px}
+@media(min-width:640px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}.quick{grid-template-columns:repeat(4,minmax(0,1fr))}form.gridform{grid-template-columns:1fr 1fr}.formfull{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header><div class="top"><div><h1>🏢 Amit Business Manager</h1><p>Business • Employees • Accounts • Reports</p></div><span class="pill">Prototype v1</span></div></header>
+<main>
+<div class="notice">Demo version: data is stored only in this browser on this device. It is not synced or backed up. Do not enter sensitive real employee or banking data yet.</div>
+<div class="stats">
+ <div class="stat"><div class="label">Total Income (NPR)</div><div class="value" id="totalIncome">0.00</div></div>
+ <div class="stat"><div class="label">Total Expenses (NPR)</div><div class="value" id="totalExpense">0.00</div></div>
+ <div class="stat"><div class="label">Net Balance (NPR)</div><div class="value" id="netBalance">0.00</div></div>
+ <div class="stat"><div class="label">Employees</div><div class="value" id="employeeCount">0</div></div>
+</div>
+<div class="section"><h2>Quick actions</h2><div class="quick">
+<button class="primary" onclick="showTab('transactions')">＋ Add transaction</button>
+<button class="secondary" onclick="showTab('employees')">＋ Add employee</button>
+<button class="secondary" onclick="exportCSV()">⇩ Export transactions</button>
+<button class="secondary" onclick="exportEmployees()">⇩ Export employees</button>
+</div></div>
+<div class="tabs">
+<button class="tab active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+<button class="tab" data-tab="transactions" onclick="showTab('transactions')">Accounts</button>
+<button class="tab" data-tab="employees" onclick="showTab('employees')">Employees</button>
+<button class="tab" data-tab="payroll" onclick="showTab('payroll')">Payroll</button>
+<button class="tab" data-tab="settings" onclick="showTab('settings')">Data</button>
+</div>
+<section class="panel active" id="panel-overview">
+ <div class="section"><h2>Recent transactions</h2><div id="recentTransactions" class="empty">No transactions yet. Add an income or expense to begin.</div></div>
+ <div class="section"><h2>Getting started</h2><div class="sub">1. Add income and expense records in Accounts.<br>2. Add staff in Employees.<br>3. Record salary payments in Payroll.<br>4. Export CSV files and open them in Excel.</div></div>
+</section>
+<section class="panel" id="panel-transactions">
+ <div class="section"><h2>Add income or expense</h2>
+ <form id="transactionForm" class="gridform">
+  <div><label for="txType">Type</label><select id="txType"><option value="income">Income</option><option value="expense">Expense</option></select></div>
+  <div><label for="txDate">Date</label><input id="txDate" type="date" required></div>
+  <div><label for="txTitle">Description</label><input id="txTitle" placeholder="e.g. Service revenue / Office rent" required></div>
+  <div><label for="txAmount">Amount (NPR)</label><input id="txAmount" type="number" min="0.01" step="0.01" placeholder="0.00" required></div>
+  <div><label for="txCategory">Category</label><select id="txCategory"><option>Sales / Revenue</option><option>Service Income</option><option>Salary</option><option>Office Expense</option><option>Travel</option><option>Tax / VAT / TDS</option><option>Other</option></select></div>
+  <div><label for="txReference">Reference / Remarks</label><input id="txReference" placeholder="Optional reference"></div>
+  <div class="formfull"><button class="primary" type="submit">Save transaction</button></div>
+ </form></div>
+ <div class="section"><h2>All transactions</h2><div id="allTransactions" class="empty">No transactions saved.</div></div>
+</section>
+<section class="panel" id="panel-employees">
+ <div class="section"><h2>Add employee</h2>
+ <form id="employeeForm" class="gridform">
+  <div><label for="empName">Full name</label><input id="empName" required placeholder="Employee name"></div>
+  <div><label for="empCode">Employee code</label><input id="empCode" placeholder="Optional ID"></div>
+  <div><label for="empRole">Position / Department</label><input id="empRole" placeholder="e.g. Accounts"></div>
+  <div><label for="empSalary">Monthly salary (NPR)</label><input id="empSalary" type="number" min="0" step="0.01" required placeholder="0.00"></div>
+  <div class="formfull"><button class="primary" type="submit">Save employee</button></div>
+ </form></div>
+ <div class="section"><h2>Employee list</h2><div id="employeeList" class="empty">No employees saved.</div></div>
+</section>
+<section class="panel" id="panel-payroll">
+ <div class="section"><h2>Record salary payment</h2>
+ <form id="payrollForm" class="gridform">
+  <div><label for="payEmployee">Employee</label><select id="payEmployee" required><option value="">Choose employee</option></select></div>
+  <div><label for="payDate">Payment date</label><input id="payDate" type="date" required></div>
+  <div><label for="payAmount">Amount paid (NPR)</label><input id="payAmount" type="number" min="0.01" step="0.01" required placeholder="0.00"></div>
+  <div><label for="payMethod">Payment method</label><select id="payMethod"><option>Bank Transfer</option><option>Cash</option><option>eSewa</option><option>CorporatePay</option><option>Other</option></select></div>
+  <div class="formfull"><label for="payNote">Remarks</label><input id="payNote" placeholder="e.g. Salary for October"></div>
+  <div class="formfull"><button class="primary" type="submit">Save salary payment</button></div>
+ </form></div>
+ <div class="section"><h2>Payroll history</h2><div id="payrollList" class="empty">No salary payments saved.</div></div>
+</section>
+<section class="panel" id="panel-settings">
+ <div class="section"><h2>Export your data</h2><p class="sub">Download CSV files to open in Excel. This demo does not create official tax or bank upload files.</p><div class="quick"><button class="secondary" onclick="exportCSV()">Export transactions</button><button class="secondary" onclick="exportEmployees()">Export employees</button><button class="secondary" onclick="exportPayroll()">Export payroll</button></div></div>
+ <div class="section"><h2>Reset demo data</h2><p class="sub">This permanently clears the records saved by this prototype in this browser.</p><button class="danger" onclick="clearData()">Clear all demo data</button></div>
+</section>
+<footer>Made for learning and testing • Amit Business Manager</footer>
+</main>
+<script>
+const KEY='amit_business_manager_v1';
+const emptyData=()=>({transactions:[],employees:[],payroll:[]});
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY))||emptyData()}catch(e){data=emptyData()}
+const $=id=>document.getElementById(id);
+const today=new Date(); const isoDate=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+$('txDate').value=isoDate;$('payDate').value=isoDate;
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function money(n){return Number(n||0).toLocaleString('en-NP',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showTab(tab){document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));window.scrollTo({top:0,behavior:'smooth'})}
+function removeRecord(group,id){if(confirm('Delete this record?')){data[group]=data[group].filter(x=>x.id!==id);save()}}
+function txMarkup(t){return `<div class="item"><div><strong>${esc(t.title)}</strong><div class="sub">${esc(t.date)} · ${esc(t.category)}${t.reference?' · '+esc(t.reference):''}</div></div><div style="text-align:right"><div class="amount ${t.type==='income'?'income':'expense'}">${t.type==='income'?'+':'−'} NPR ${money(t.amount)}</div><button class="danger small" onclick="removeRecord('transactions','${t.id}')">Delete</button></div></div>`}
+function render(){
+ const income=data.transactions.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount),0);
+ const expense=data.transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+Number(t.amount),0);
+ $('totalIncome').textContent=money(income);$('totalExpense').textContent=money(expense);$('netBalance').textContent=money(income-expense);$('employeeCount').textContent=data.employees.length;
+ const tx=[...data.transactions].sort((a,b)=>b.date.localeCompare(a.date));
+ $('recentTransactions').innerHTML=tx.length?tx.slice(0,5).map(txMarkup).join(''):'<div class="empty">No transactions yet. Add an income or expense to begin.</div>';
+ $('allTransactions').innerHTML=tx.length?tx.map(txMarkup).join(''):'<div class="empty">No transactions saved.</div>';
+ $('employeeList').innerHTML=data.employees.length?[...data.employees].map(e=>`<div class="item"><div><strong>${esc(e.name)}</strong><div class="sub">${esc(e.code||'No code')} · ${esc(e.role||'No department')}</div></div><div style="text-align:right"><div class="amount">NPR ${money(e.salary)}</div><button class="danger small" onclick="removeRecord('employees','${e.id}')">Delete</button></div></div>`).join(''):'<div class="empty">No employees saved.</div>';
+ $('payEmployee').innerHTML='<option value="">Choose employee</option>'+data.employees.map(e=>`<option value="${e.id}">${esc(e.name)} (${esc(e.code||'No code')})</option>`).join('');
+ $('payrollList').innerHTML=data.payroll.length?[...data.payroll].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>{const e=data.employees.find(x=>x.id===p.employeeId);return `<div class="item"><div><strong>${esc(e?e.name:'Employee record unavailable')}</strong><div class="sub">${esc(p.date)} · ${esc(p.method)}${p.note?' · '+esc(p.note):''}</div></div><div style="text-align:right"><div class="amount expense">NPR ${money(p.amount)}</div><button class="danger small" onclick="removeRecord('payroll','${p.id}')">Delete</button></div></div>`}).join(''):'<div class="empty">No salary payments saved.</div>';
+}
+$('transactionForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('txAmount').value);if(!(amount>0))return alert('Enter an amount greater than zero.');data.transactions.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),type:$('txType').value,date:$('txDate').value,title:$('txTitle').value.trim(),amount,category:$('txCategory').value,reference:$('txReference').value.trim()});save();e.target.reset();$('txDate').value=isoDate;alert('Transaction saved.');});
+$('employeeForm').addEventListener('submit',e=>{e.preventDefault();data.employees.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name:$('empName').value.trim(),code:$('empCode').value.trim(),role:$('empRole').value.trim(),salary:Number($('empSalary').value)});save();e.target.reset();alert('Employee saved.');});
+$('payrollForm').addEventListener('submit',e=>{e.preventDefault();if(!$('payEmployee').value)return alert('Choose an employee.');const amount=Number($('payAmount').value);if(!(amount>0))return alert('Enter an amount greater than zero.');data.payroll.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),employeeId:$('payEmployee').value,date:$('payDate').value,amount,method:$('payMethod').value,note:$('payNote').value.trim()});data.transactions.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+1),type:'expense',date:$('payDate').value,title:'Salary payment - '+(data.employees.find(x=>x.id===$('payEmployee').value)?.name||'Employee'),amount,category:'Salary',reference:$('payMethod').value});save();e.target.reset();$('payDate').value=isoDate;alert('Salary payment saved and recorded as an expense.');});
+function downloadCSV(filename,rows){const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function exportCSV(){downloadCSV('transactions.csv',[['Date','Type','Description','Amount_NPR','Category','Reference'],...data.transactions.map(t=>[t.date,t.type,t.title,t.amount,t.category,t.reference])])}
+function exportEmployees(){downloadCSV('employees.csv',[['Name','Employee Code','Position / Department','Monthly Salary_NPR'],...data.employees.map(e=>[e.name,e.code,e.role,e.salary])])}
+function exportPayroll(){downloadCSV('payroll.csv',[['Date','Employee','Employee Code','Amount_NPR','Method','Remarks'],...data.payroll.map(p=>{const e=data.employees.find(x=>x.id===p.employeeId)||{};return[p.date,e.name,e.code,p.amount,p.method,p.note]})])}
+function clearData(){if(confirm('Clear ALL transactions, employees, and payroll records from this browser?')){data=emptyData();save();alert('Demo data cleared.');}}
+render();
+</script>
+</body></html>
